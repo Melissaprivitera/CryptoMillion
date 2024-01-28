@@ -1,0 +1,101 @@
+package main
+
+templ Index() {
+	<!DOCTYPE html>
+	<html>
+		<head>
+			<title>cryptoMillion</title>
+			<script src="https://unpkg.com/htmx.org@1.9.10"></script>
+			<script src="https://cdn.tailwindcss.com"></script>
+		</head>
+		<body style="background: #212529; color: #F5F5F5;" class="font-mono">
+			<header class="w-full flex justify-center text-black m-3">
+				<h1 class="bg-orange-500 rounded text-7xl font-bold" >cryptoMillion</h1>
+			</header>
+			<section class="flex justify-center">
+				@ConnectButton()
+			</section>
+		</body>
+	</html>
+}
+
+templ Content() {
+	<div id="content">
+		@Balance()
+		@BuyTicket()
+	</div>
+}
+
+templ Balance() {
+	<div id="balance" class="flex flex-col items-center font-bold text-2xl m-5">
+		<div hx-get="/balance" hx-swap="outerHTML" hx-trigger="load" >
+		</div>
+		<p>Prize pool</p>
+	</div>
+}
+
+templ BuyTicket() {
+	<div id="buyTicket" class="m-16">
+		<div class="text-center">Choose your numbers</div>
+		<form hx-post="/buyTicket" class="flex flex-col" hx-swap="none">
+			<div class="flex">
+				@Input("number1")
+				@Input("number2")
+				@Input("number3")
+				@Input("number4")
+				@Input("number5")
+			</div>
+			<input class="m-16 rounded bg-purple-500" type="submit" value="Buy Ticket" />
+		</form>
+	</div>
+}
+
+templ Input(name string) {
+	<input class="rounded-full text-black text-center bg-gray-200 w-16 h-16 m-3" required type="text" name={name} />
+}
+
+templ ConnectButton() {
+	<div id="address">
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.7.4-rc.1/web3.min.js">
+		</script>
+
+		<script>
+			let acc;
+
+			function checkConnection() {
+				if (acc) {
+					console.log("Already connected");
+					return;
+				}
+				console.log("Checking connection");
+				window.ethereum.request({method: 'eth_accounts'})
+					.then((result) => {
+						acc = result.pop();
+						if (acc) {
+							console.log("Connected");
+							htmx.trigger("#address", "connect");
+						} else {
+							console.log("Not connected");
+						}
+					})
+			}
+			checkConnection();
+
+			function connect() {
+				if (window.ethereum) {
+					window.ethereum.request({ method: "eth_requestAccounts" })
+						.then((result) => {
+							checkConnection();
+						})
+				} else {
+					console.log("No wallet");
+				}
+			}
+
+		</script>
+		<div hx-target="#address" hx-post="/connect" hx-swap="outerHTML" hx-vals="js:{ address: acc }" hx-trigger="connect from:body">
+			<input class="m-16 rounded bg-sky-500 border-solid border-sky-500 border-2" type="button" value="Connect Wallet" onclick="connect()" />
+		</div>
+	</div>
+}
+
