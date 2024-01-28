@@ -38,9 +38,8 @@ contract cryptoMillion {
 	}
 
 	function buy(address payable _address, uint64 numbers)
-		onlyOwner
 		unpackCheck(numbers)
-		public
+		external
 		payable
 	{
 		require(msg.value >= ticketValue);
@@ -60,6 +59,14 @@ contract cryptoMillion {
 			addresses[i].transfer(amount);
 		}
 		currentRound++;
+	}
+
+	function getTickets(address _address)
+		public
+		view
+		returns (uint64[] memory)
+	{
+		return players[currentRound][_address];
 	}
 
 	function getBalance()
@@ -83,6 +90,7 @@ contract cryptoMillion {
 		view
 		returns (uint64)
 	{
+		require(currentRound > 0);
 		return winners[currentRound - 1];
 	}
 }
